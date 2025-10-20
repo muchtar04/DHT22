@@ -4,8 +4,81 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>🌿 DHT22_ESP32 Web IoT Dashboard</title>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import modul Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+    // Konfigurasi Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyDnix0walSs7wEjYVHCa2FcV4cxYpmtvSI",
+      authDomain: "dht22-95791.firebaseapp.com",
+      databaseURL: "https://dht22-95791-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "dht22-95791",
+      storageBucket: "dht22-95791.firebasestorage.app",
+      messagingSenderId: "1003568326745",
+      appId: "1:1003568326745:web:324d3d72ea709c76b36948"
+    };
+
+    // Inisialisasi Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    // Elemen HTML
+    const loginDiv = document.getElementById("login");
+    const dashboardDiv = document.getElementById("dashboard");
+    const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
+    const loginBtn = document.getElementById("loginBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+
+    // Tombol login
+    loginBtn.addEventListener("click", () => {
+      const email = emailInput.value;
+      const password = passwordInput.value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          alert("Login berhasil!");
+        })
+        .catch(error => {
+          alert("Login gagal: " + error.message);
+        });
+    });
+
+    // Deteksi status login
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginDiv.style.display = "none";
+        dashboardDiv.style.display = "block";
+
+        // Referensi ke data Firebase
+        const tempRef = ref(db, "SensorData/Temperature");
+        const humRef = ref(db, "SensorData/Humidity");
+
+        // Update data realtime
+        onValue(tempRef, (snapshot) => {
+          document.getElementById("temp").innerHTML = snapshot.val() + " °C";
+        });
+        onValue(humRef, (snapshot) => {
+          document.getElementById("hum").innerHTML = snapshot.val() + " %";
+        });
+      } else {
+        loginDiv.style.display = "block";
+        dashboardDiv.style.display = "none";
+      }
+    });
+
+    // Tombol logout
+    logoutBtn.addEventListener("click", () => {
+      signOut(auth);
+    });
+  </script>
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,9 +86,7 @@
       text-align: center;
       padding: 20px;
     }
-    h2 {
-      color: #2c3e50;
-    }
+    h2 { color: #2c3e50; }
     .card {
       display: inline-block;
       background: white;
@@ -27,46 +98,47 @@
     }
     .temp { color: #e74c3c; }
     .hum { color: #3498db; }
+    input {
+      padding: 8px;
+      margin: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      background: #3498db;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover { background: #2980b9; }
   </style>
 </head>
+
 <body>
   <h2>🌿 DHT22_ESP32 Web IoT Dashboard</h2>
-  <div class="card temp">
-    <h3>Suhu</h3>
-    <p id="temp">-- °C</p>
+
+  <!-- Form Login -->
+  <div id="login">
+    <h3>Login ke Firebase</h3>
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button id="loginBtn">Login</button>
   </div>
-  <div class="card hum">
-    <h3>Kelembaban</h3>
-    <p id="hum">-- %</p>
+
+  <!-- Dashboard -->
+  <div id="dashboard" style="display:none;">
+    <div class="card temp">
+      <h3>Suhu</h3>
+      <p id="temp">-- °C</p>
+    </div>
+    <div class="card hum">
+      <h3>Kelembaban</h3>
+      <p id="hum">-- %</p>
+    </div>
+    <br>
+    <button id="logoutBtn">Logout</button>
   </div>
-
-  <script>
-    // Firebase config kamu
-    const firebaseConfig = {
-  	apiKey: "AIzaSyDnix0walSs7wEjYVHCa2FcV4cxYpmtvSI",
-  	authDomain: "dht22-95791.firebaseapp.com",
-  	databaseURL: "https://dht22-95791-default-rtdb.asia-southeast1.firebasedatabase.app",
-  	projectId: "dht22-95791",
-  	storageBucket: "dht22-95791.firebasestorage.app",
-  	messagingSenderId: "1003568326745",
-  	appId: "1:1003568326745:web:324d3d72ea709c76b36948"
-	};
-
-
-    // Init Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    const tempRef = db.ref("SensorData/Temperature");
-    const humRef = db.ref("SensorData/Humidity");
-
-    tempRef.on("value", snapshot => {
-      document.getElementById("temp").innerHTML = snapshot.val() + " °C";
-    });
-
-    humRef.on("value", snapshot => {
-      document.getElementById("hum").innerHTML = snapshot.val() + " %";
-    });
-  </script>
 </body>
 </html>
