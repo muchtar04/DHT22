@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>🌿 DHT22_ESP32 Web IoT Dashboard</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      text-align: center;
+      padding: 20px;
+    }
+    h2 {
+      color: #2c3e50;
+    }
+    .card {
+      display: inline-block;
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      margin: 10px;
+      min-width: 150px;
+    }
+    .temp { color: #e74c3c; }
+    .hum { color: #3498db; }
+  </style>
+</head>
+<body>
+  <h2>🌿 DHT22_ESP32 Web IoT Dashboard</h2>
+  <div class="card temp">
+    <h3>Suhu</h3>
+    <p id="temp">-- °C</p>
+  </div>
+  <div class="card hum">
+    <h3>Kelembaban</h3>
+    <p id="hum">-- %</p>
+  </div>
+
+  <script>
+    // Firebase config kamu
+    const firebaseConfig = {
+  	apiKey: "AIzaSyDnix0walSs7wEjYVHCa2FcV4cxYpmtvSI",
+  	authDomain: "dht22-95791.firebaseapp.com",
+  	databaseURL: "https://dht22-95791-default-rtdb.asia-southeast1.firebasedatabase.app",
+  	projectId: "dht22-95791",
+  	storageBucket: "dht22-95791.firebasestorage.app",
+  	messagingSenderId: "1003568326745",
+  	appId: "1:1003568326745:web:324d3d72ea709c76b36948"
+	};
+
+
+    // Init Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const tempRef = db.ref("SensorData/Temperature");
+    const humRef = db.ref("SensorData/Humidity");
+
+    tempRef.on("value", snapshot => {
+      document.getElementById("temp").innerHTML = snapshot.val() + " °C";
+    });
+
+    humRef.on("value", snapshot => {
+      document.getElementById("hum").innerHTML = snapshot.val() + " %";
+    });
+  </script>
+</body>
+</html>
